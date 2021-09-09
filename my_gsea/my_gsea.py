@@ -54,10 +54,26 @@ class GSEA(object):
         df_out['Genes'] = genes_in_gs
         df_out.sort_values(by=['Adjusted P-value', 'AUC'], inplace=True, ascending=[True, False])
         df_out = df_out[df_out['Adjusted P-value'] < self.p_thresh]
-        return df_out, dict(zip(gene_set_list, objects))
-        check=1
+        self.DO = dict(zip(gene_set_list, objects))
+        self.enr_results = df_out
+        self.gene_score = gene_score
 
+    def Vis(self,path_sel):
+        fig, ax = plt.subplots(3, 1, figsize=(10, 5))
+        x = copy.copy(self.DO[path_sel].idx)
+        ax[0].vlines(np.where(x != 0), ymin=0, ymax=1)
+        ax[0].set_xticks([])
+        ax[0].set_yticks([])
+        ax[0].set_xlim([0, len(self.gene_score)])
+        x = np.array(range(len(self.DO[path_sel].idx)))
+        y = self.gene_score
+        ax[1].plot(x[y != 0], y[y != 0])
+        ax[1].set_xticks([])
+        ax[1].axhline(y=0, color='k')
+        ax[1].set_xlim([0, len(self.gene_score)])
+        ax[2].plot(self.DO[path_sel].idx_sum)
+        ax[2].set_xlim([0, len(self.gene_score)])
+        plt.suptitle(path_sel)
+        plt.subplots_adjust(hspace=0.00)
+        return fig,ax
 
-# gene_sel = np.array(DFs[cluster_sel]['genes'])
-# gene_score = np.array(DFs[cluster_sel]['fc'])
-# enr_results_2,do = GSEA(gene_sel,gene_score,num_perm=1000,p_thresh=0.05)

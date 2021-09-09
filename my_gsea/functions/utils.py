@@ -28,4 +28,3 @@ def compute_gs_enrichment(obj_out,gene_sel,gene_score,set,num_perm=500):
     else:
         return 0.5, 1.0, []
 
-
