@@ -5,7 +5,8 @@ class graph_object(object):
     def __init__(self):
         check=1
 
-def compute_gs_enrichment(obj_out,gene_sel,gene_score,set,num_perm=500):
+def compute_gs_enrichment(gene_sel,gene_score,set,num_perm=500):
+    obj_out = graph_object()
     overlap,idx_1,idx_2 = np.intersect1d(gene_sel,set,return_indices=True)
     overlap_out = np.flip(overlap[np.argsort(gene_score[idx_1])])
     if len(overlap)>0:
@@ -24,7 +25,7 @@ def compute_gs_enrichment(obj_out,gene_sel,gene_score,set,num_perm=500):
             idx = np.cumsum(idx)
             auc = scipy.integrate.simps(idx, range(len(idx)))#/len(overlap_out)#/idx[-1] #/ (np.max(idx) * len(idx))
             aucs.append(auc)
-        return auc_test, (1-scipy.stats.percentileofscore(aucs,auc_test)/100),overlap_out
+        return auc_test, (1-scipy.stats.percentileofscore(aucs,auc_test)/100),overlap_out,obj_out
     else:
-        return 0.5, 1.0, []
+        return 0.5, 1.0, [],[]
 
