@@ -22,5 +22,5 @@ setup(
     license="LICENSE",
     long_description=open(os.path.join(dir,"README.md")).read(),
     long_description_content_type='text/markdown',
-    package_data={'my_gsea':[os.path.join('gene_set','*')]}
+    package_data={'my_gsea':[os.path.join('gene_sets','*')]}
 )
