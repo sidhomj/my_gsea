@@ -11,7 +11,7 @@ with open(req_file) as f:
     required = f.read().splitlines()
 
 setup(
-    name="My_GSEA",
+    name="my_gsea",
     description="Gene Set Enrichment Analysis",
     version="0.0",
     author="John-William Sidhom",
