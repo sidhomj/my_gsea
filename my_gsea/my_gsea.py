@@ -7,6 +7,7 @@ import copy
 from statsmodels.stats.multitest import multipletests
 from my_gsea.functions import utils
 from multiprocessing import Pool
+from multiprocessing import get_context
 
 class GSEA(object):
     def __init__(self,p_thresh = 0.05, num_perm = 10):
@@ -30,14 +31,14 @@ class GSEA(object):
         objects = []
         for gs in self.gene_set:
             gene_set_list.append(gs)
-            auc_i, p_i, o,obj_out = utils.compute_gs_enrichment(gene_sel,
+            auc_i, p_i, obj_out,overlap_num,overlap_genes = utils.compute_gs_enrichment(gene_sel,
                                                         gene_score,
                                                         self.gene_set[gs],
                                                         num_perm=self.num_perm)
             aucs.append(auc_i)
             p_vals.append(p_i)
-            overlap.append(str(len(o)) + '/' + str(len(self.gene_set[gs])))
-            genes_in_gs.append(';'.join(o))
+            overlap.append(overlap_num)
+            genes_in_gs.append(overlap_genes)
             objects.append(obj_out)
 
         df_out = pd.DataFrame()
@@ -53,30 +54,33 @@ class GSEA(object):
         self.enr_results = df_out
         self.gene_score = gene_score
 
-    def Run_parallel(self,gene_sel,gene_score,num_workers=2):
-        p = Pool(num_workers)
+    def Run_parallel(self,gene_sel,gene_score,num_workers=2,p=None):
+        if p is None:
+            p = get_context('fork').Pool(num_workers)
+
         gene_sets = [self.gene_set[gs] for gs in self.gene_set]
+        gene_set_list = [gs for gs in self.gene_set]
+        num_ins = len(gene_sets)
 
+        args = list(zip([gene_sel]*num_ins,
+                        [gene_score]*num_ins,
+                        gene_sets,
+                        [self.num_perm]*num_ins
+            )
+        )
 
+        out = p.starmap(utils.compute_gs_enrichment,args)
 
-        aucs = []
-        p_vals = []
-        genes_in_gs = []
-        gene_set_list = []
-        overlap = []
-        objects = []
-        for gs in self.gene_set:
-            gene_set_list.append(gs)
-            auc_i, p_i, o = utils.compute_gs_enrichment(obj_out,
-                                                        gene_sel,
-                                                        gene_score,
-                                                        self.gene_set[gs],
-                                                        num_perm=self.num_perm)
-            aucs.append(auc_i)
-            p_vals.append(p_i)
-            overlap.append(str(len(o)) + '/' + str(len(self.gene_set[gs])))
-            genes_in_gs.append(';'.join(o))
-            objects.append(obj_out)
+        if p is None:
+            p.close()
+            p.join()
+
+        out = list(zip(*out))
+        aucs = out[0]
+        p_vals = out[1]
+        objects = out[2]
+        overlap = out[3]
+        genes_in_gs = out[4]
 
         df_out = pd.DataFrame()
         df_out['Term'] = gene_set_list

@@ -25,7 +25,9 @@ def compute_gs_enrichment(gene_sel,gene_score,set,num_perm=500):
             idx = np.cumsum(idx)
             auc = scipy.integrate.simps(idx, range(len(idx)))#/len(overlap_out)#/idx[-1] #/ (np.max(idx) * len(idx))
             aucs.append(auc)
-        return auc_test, (1-scipy.stats.percentileofscore(aucs,auc_test)/100),overlap_out,obj_out
+        overlap_num = str(len(overlap_out)) + '/' + str(len(set))
+        overlap_genes = ';'.join(overlap_out)
+        return auc_test, (1-scipy.stats.percentileofscore(aucs,auc_test)/100),obj_out, overlap_num,overlap_genes
     else:
-        return 0.5, 1.0, [],[]
+        return 0.5, 1.0, [],[],[]
 
